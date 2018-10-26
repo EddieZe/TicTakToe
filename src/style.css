@@ -2,7 +2,7 @@ body {
     text-align: center;
 }
 
-td {
+td.square {
     border: 1px solid #000;
     width: 5rem;
     height: 5rem;
@@ -14,4 +14,10 @@ td {
 
 table{
     margin: 3rem auto;
+}
+
+.gameFinished{
+    margin-top: 3rem;
+    font-size: 50px;
+    color: darkred;
 }

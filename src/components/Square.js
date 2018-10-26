@@ -16,7 +16,7 @@ class Square extends Component {
     }
 
     shouldComponentUpdate(nextProps){
-        return !this.state.value && !!nextProps.value;
+        return (!this.state.value && !!nextProps.value) || (!nextProps.value && !!this.state.value);
     }
 
     componentWillUpdate(nextProps){

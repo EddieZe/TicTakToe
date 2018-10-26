@@ -31,7 +31,7 @@ class Game extends Component {
     render() {
         return (
             <div className="game">
-                <div onClick={this.switchTurn}>It's your turn: {this.state.currentTurn}</div>
+                <div onClick={this.switchTurn}>{this.state.currentTurn}, It's your turn!</div>
                 <Board onTurnTaken={this.onTurnTaken} firstTurn={this.state.currentTurn}/>
             </div>
         );

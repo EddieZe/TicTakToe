@@ -4,9 +4,14 @@ body {
 
 td {
     border: 1px solid #000;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 5rem;
+    height: 5rem;
+    font-size: 50px;
     background-color: #999999;
     color: #ffffff;
     cursor: pointer;
+}
+
+table{
+    margin: 3rem auto;
 }

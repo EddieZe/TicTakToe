@@ -3,6 +3,7 @@
  * Author: Eddie Zeltser
  * Create Date: 26/10/2018
  */
+
 import React, { Component } from 'react';
 
 class Square extends Component {

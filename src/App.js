@@ -1,3 +1,9 @@
+/**
+ ======== TicTakToe ==========
+ * Author: Eddie Zeltser
+ * Create Date: 25/10/2018
+ */
+
 import React, { Component } from 'react';
 import './style.css';
 import Game from './components/Game'

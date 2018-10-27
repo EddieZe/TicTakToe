@@ -98,8 +98,9 @@ class Game extends Component {
     render() {
         return (
             <div className="game">
-                <div>{this.state.currentTurn}, It's your turn!</div>
-                <div>{9 - this.state.moves} moves left</div>
+                { !this.state.isGameFinished && !this.state.winner ?
+                    <div className="gameIndicators">
+                        <div>{this.state.currentTurn}, It's your turn!</div><div>{9 - this.state.moves} moves left</div></div> : null }
                 <div className="board">
                     <table>
                         <tbody>

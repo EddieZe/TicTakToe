@@ -21,21 +21,22 @@ let gameStatus;
 
 io.on('connection', (player) => {
 
-    player.on('askToJoin', (name) =>{
+    player.on('askToJoin', (name) => {
         if (players.length < maxNumOfPlayers) {
-            let newPlayer = {name: name, sign: players.length === 0 ? 'X' : 'O'};
+            let sign = players.length === 0 ? 'X' : players[0].sign === 'X' ? 'O' : "X";
+
+            let newPlayer = {id: player.id, name: name, sign: sign};
             players.push(newPlayer);
-            if (!gameStatus){initGame()}
-            let data = {
-                board : gameStatus.board,
-                playerSign: newPlayer.sign,
-                currentTurn: 'X',
-                moves: 0
-            };
-            player.emit('joinedToGame', {data: data});
+
+            if (!gameStatus) {
+                initGame()
+            }
+
+            gameStatus.playerSign = newPlayer.sign;
             console.log('Player: ' + newPlayer.name + ' joined to the game, with the sign: ' + newPlayer.sign);
+            player.emit('joinedToGame', gameStatus);
             if (players.length === maxNumOfPlayers) {
-                player.emit('canStartTheGame');
+                io.sockets.emit('canStartTheGame');
             }
         }
         else {
@@ -45,26 +46,27 @@ io.on('connection', (player) => {
 
     player.on('resetGame', () => {
         initGame();
-        updatePlayersWithStatus();
+        io.sockets.emit('updateStatus', gameStatus);
+        console.log('Game Restarted')
     });
 
     player.on('makeMove', (cords, sign) => {
         console.log(sign + ' asked to make the following move: ' + cords[0] + ',' + cords[1]);
         gameStatus.board[cords[0]][cords[1]] = sign;
-        gameStatus.currentTurn = gameStatus.currentTurn === 'X' ? '0' : 'X';
+        gameStatus.currentTurn = gameStatus.currentTurn === 'X' ? 'O' : 'X';
         gameStatus.moves = 9 - gameStatus.moves > 0 ? gameStatus.moves + 1 : gameStatus.moves;
         let winner = checkIsGameFinished();
-        if (winner){
+        if (winner || gameStatus.moves === 0) {
             gameStatus.winner = winner;
             gameStatus.isGameFinished = true;
         }
-        player.emit('updateStatus', gameStatus)
+        io.sockets.emit('updateStatus', gameStatus)
     });
 
     player.on('disconnect', () => {
-        //remove from players list
-        if (players.length === 0) {
-            initGame();
+        let index = players.map(function(e) { return e.id; }).indexOf(player.id);
+        if (index > -1) {
+            players.splice(index, 1);
         }
     })
 });
@@ -73,7 +75,7 @@ function checkIsGameFinished() {
     const sets = winningSets;
     let board = gameStatus.board;
     for (let i = 0; i < sets.length; i++) {
-        const [a,b,c] = sets[i];
+        const [a, b, c] = sets[i];
         if (board[a[0]][a[1]] && board[a[0]][a[1]] === board[b[0]][b[1]] && board[a[0]][a[1]] === board[c[0]][c[1]]) {
             return board[a[0]][a[1]]
         }

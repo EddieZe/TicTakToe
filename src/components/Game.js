@@ -4,14 +4,16 @@
  * Create Date: 25/10/2018
  */
 
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import Square from './Square'
+import {makeMove, resetGame, askToJoin} from '../connector';
 
 class Game extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            currentTurn: 'X',
+            currentTurn: '',
+            playerSign: '',
             moves: 0,
             boardSize: 3,
             board: [],
@@ -30,77 +32,72 @@ class Game extends Component {
         };
 
         this.handleClick = this.handleClick.bind(this);
-        this.switchTurn = this.switchTurn.bind(this);
-        this.initGame = this.initGame.bind(this);
+        this.updateState = this.updateState.bind(this);
     }
 
-    componentDidMount() {
-        this.initGame();
-    }
-
-    initGame() {
-        let board = this.state.board;
-        for (var i = 0; i < this.state.boardSize; i++)
-            board[i] = new Array(this.state.boardSize).fill(null);
-        this.setState({
-            currentTurn: 'X',
-            moves: 0,
-            boardSize: 3,
-            isGameFinished: false,
-            winner: null,
-            board: board
-        })
-    }
-
-    whoHasWon() {
-        const sets = this.state.winningSets;
-        let board = this.state.board;
-        for (let i = 0; i < sets.length; i++) {
-            const [a,b,c] = sets[i];
-            if (board[a[0]][a[1]] && board[a[0]][a[1]] === board[b[0]][b[1]] && board[a[0]][a[1]] === board[c[0]][c[1]]) {
-                return board[a[0]][a[1]]
+    componentWillMount() {
+        askToJoin((gameParams) => {
+            if (gameParams) {
+                this.updateState(gameParams);
             }
-        }
-        return false;
+        });
+    }
+
+    resetGame() {
+        resetGame();
     }
 
     handleClick(x, y) {
-        let b = this.state.board;
-        if (!b[x][y] && !this.state.isGameFinished) {
-            b[x][y] = this.state.currentTurn;
-            let winner = this.whoHasWon();
-            this.switchTurn();
-            if (winner) {
-                console.log(winner + ' has Won');
-                this.setState({isGameFinished: true, winner: winner})
-            }
-            else {
-                this.setState({board: b});
-            }
+        makeMove([x, y], this.state.playerSign);
+    }
+
+    updateState(newState) {
+        this.setState({
+            currentTurn: newState.currentTurn,
+            playerSign: this.state.playerSign ? this.state.playerSign : newState.playerSign,
+            moves: newState.moves,
+            isGameFinished: newState.isGameFinished,
+            winner: newState.winner,
+            board: newState.board,
+            isDataLoaded : true
+        });
+        if (this.state.isGameFinished) {
+            setTimeout(() => resetGame(), 3000)
         }
     }
 
     renderSquare(x, y) {
-        const val = this.state.board.length > 0 ? this.state.board[x][y] : null;
         return (
-            <Square value={val} handleFunc={this.handleClick.bind(this,x,y)}
-                    isGameFinished={this.state.isGameFinished}/>
+            <Square value={this.state.board[x][y]} handleFunc={() => this.handleClick(x, y)}
+                    canBeChanged={!this.state.isGameFinished && this.state.currentTurn === this.state.playerSign}/>
         )
     }
 
-    switchTurn() {
-        let newTurn = this.state.currentTurn === 'X' ? '0' : 'X';
-        let newMoves = 9 - this.state.moves > 0 ? this.state.moves + 1 : this.state.moves;
-        this.setState({currentTurn: newTurn, moves: newMoves, isGameFinished: !(9 - newMoves > 0)});
-        return newTurn;
+    renderGameIndicators() {
+        if (!this.state.isGameFinished && !this.state.winner) {
+            if (this.state.playerSign) {
+                return (
+                    <div className="game-indicators">
+                        <div>You playing as: {this.state.playerSign}</div>
+                        <div> It's {this.state.currentTurn} turn!</div>
+                        <div>{9 - this.state.moves} moves left</div>
+                    </div>)
+            }
+            else {
+                return (<div className="game-indicators">
+                    {!this.state.playerSign &&
+                    <div>This game is fully booked, You can only watch</div>}
+                    <div>{9 - this.state.moves} moves left</div>
+                </div>)
+            }
+        }
     }
 
     render() {
         return (
             <div className="game">
-                { !this.state.isGameFinished && !this.state.winner ?
-                    <div className="gameIndicators">
-                        <div>{this.state.currentTurn}, It's your turn!</div><div>{9 - this.state.moves} moves left</div></div> : null }
+                {this.renderGameIndicators()}
+                {this.state.isDataLoaded &&
                 <div className="board">
                     <table>
                         <tbody>
@@ -122,11 +119,13 @@ class Game extends Component {
                         </tbody>
                     </table>
                 </div>
-                <button onClick={this.initGame.bind(this)}>Start over</button>
-                <div className="gameFinished">
-                    { this.state.isGameFinished && !this.state.winner ? <span>Game Over</span> : null }
-                    { this.state.isGameFinished && this.state.winner ? <span>{this.state.winner} has won</span> : null }
+                }
+                {this.state.playerSign && <button onClick={this.resetGame.bind(this)}>Cleanup</button>}
+                {this.state.isGameFinished &&
+                <div className="game-finished">
+                    {this.state.winner ? <span>{this.state.winner} has won</span> : <span>Game Over</span>}
                 </div>
+                }
             </div>
         );
     }

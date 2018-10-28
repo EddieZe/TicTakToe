@@ -9,27 +9,26 @@ import React, { Component } from 'react';
 class Square extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-            value: props.value,
-            handleFunc: props.handleFunc
-        };
+
+        this.onClick = this.onClick.bind(this);
     }
 
     shouldComponentUpdate(nextProps){
-        return (!this.state.value && !!nextProps.value) || (!nextProps.value && !!this.state.value);
+        return (!this.props.value && !!nextProps.value) || (!nextProps.value && !!this.props.value);
     }
 
-    componentWillUpdate(nextProps){
-        /*Not a good practice solution. need to find better one!*/
-        this.setState({value: nextProps.value, handleFunc: nextProps.handleFunc});
+    onClick(cb){
+        if (this.props.canBeChanged){
+            cb();
+        }
     }
 
     render() {
         return (
             <td
                 className="square"
-                onClick={this.state.handleFunc}>
-                {this.state.value}
+                onClick={() => this.onClick(this.props.handleFunc)}>
+                {this.props.value}
             </td>
         );
     }

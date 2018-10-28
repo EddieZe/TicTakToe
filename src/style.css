@@ -16,7 +16,7 @@ table{
     margin: 3rem auto;
 }
 
-.gameFinished{
+.game-finished{
     margin-top: 3rem;
     font-size: 50px;
     color: darkred;

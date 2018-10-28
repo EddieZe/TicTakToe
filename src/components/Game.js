@@ -6,12 +6,14 @@
 
 import React, { Component } from 'react';
 import Square from './Square'
+import { makeMove, resetGame, askToJoin } from '../connector';
 
 class Game extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            currentTurn: 'X',
+            currentTurn: '',
+            playerSign: '',
             moves: 0,
             boardSize: 3,
             board: [],
@@ -30,12 +32,23 @@ class Game extends Component {
         };
 
         this.handleClick = this.handleClick.bind(this);
-        this.switchTurn = this.switchTurn.bind(this);
+        this.updateState = this.updateState.bind(this);
         this.initGame = this.initGame.bind(this);
     }
 
+    componentWillMount() {
+        askToJoin((gameParams) => {
+            if (gameParams) {
+                this.updateState(gameParams.data);
+            }
+            else {
+                console.log('Cannot Join, too many players already.')
+            }
+        })
+    }
+
     componentDidMount() {
-        this.initGame();
+        //this.initGame();
     }
 
     initGame() {
@@ -65,19 +78,26 @@ class Game extends Component {
     }
 
     handleClick(x, y) {
+        makeMove([x,y], this.state.playerSign, (gameParams) => {
+            this.updateState(gameParams.data);
+        });
         let b = this.state.board;
         if (!b[x][y] && !this.state.isGameFinished) {
             b[x][y] = this.state.currentTurn;
-            let winner = this.whoHasWon();
-            this.switchTurn();
-            if (winner) {
-                console.log(winner + ' has Won');
-                this.setState({isGameFinished: true, winner: winner})
-            }
-            else {
-                this.setState({board: b});
-            }
+            this.setState({board: b});
+            //this.switchTurn();
         }
+    }
+
+    updateState(newState) {
+        this.setState({
+            currentTurn: newState.currentTurn ? newState.currentTurn : this.state.currentTurn,
+            playerSign: newState.playerSign ? newState.playerSign : this.state.playerSign,
+            moves: newState.moves ? newState.moves : this.state.moves,
+            isGameFinished: newState.isGameFinished ? newState.isGameFinished : this.state.isGameFinished,
+            winner: newState.winner ? newState.winner : this.state.winner,
+            board: newState.board ? newState.board : this.state.board
+        })
     }
 
     renderSquare(x, y) {
@@ -100,7 +120,9 @@ class Game extends Component {
             <div className="game">
                 { !this.state.isGameFinished && !this.state.winner ?
                     <div className="gameIndicators">
-                        <div>{this.state.currentTurn}, It's your turn!</div><div>{9 - this.state.moves} moves left</div></div> : null }
+                        <div>{this.state.currentTurn}, It's your turn!</div>
+                        <div>{9 - this.state.moves} moves left</div>
+                    </div> : null }
                 <div className="board">
                     <table>
                         <tbody>

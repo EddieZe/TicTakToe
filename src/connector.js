@@ -14,7 +14,10 @@ function makeMove(cords, sign, cb) {
     socket.emit('makeMove', cords, sign);
 }
 
-function resetGame() {
+function resetGame(cb) {
+    socket.on('updateStatus', (gameParams) => {
+        cb(gameParams);
+    });
     socket.emit('resetGame');
 }
 

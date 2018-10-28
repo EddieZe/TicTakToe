@@ -120,7 +120,7 @@ class Game extends Component {
                     </table>
                 </div>
                 }
-                {this.state.playerSign && <button onClick={this.resetGame.bind(this)}>Start over</button>}
+                {this.state.playerSign && <button onClick={this.resetGame.bind(this)}>Cleanup</button>}
                 {this.state.isGameFinished &&
                 <div className="game-finished">
                     {this.state.winner ? <span>{this.state.winner} has won</span> : <span>Game Over</span>}

@@ -86,8 +86,7 @@ class Game extends Component {
             else {
                 return (<div className="game-indicators">
                     {!this.state.playerSign &&
-                    <div>This game is fully booked, You can only watch</div>}
-                    <div>{9 - this.state.moves} moves left</div>
+                    <div>This game is fully booked, Please try again later</div>}
                 </div>)
             }
         }

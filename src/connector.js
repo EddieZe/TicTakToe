@@ -19,9 +19,7 @@ function askToJoin(cb) {
     socket.on('joinedToGame', (gameParams) => {
         cb(gameParams);
     });
-    socket.on('gameIsFull', () => {
-        cb()
-    });
+    socket.on('gameIsFull');
     socket.on('updateStatus', (gameParams) => {
         cb(gameParams);
     });

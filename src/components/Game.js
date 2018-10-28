@@ -34,13 +34,13 @@ class Game extends Component {
         this.initGame = this.initGame.bind(this);
     }
 
-    componentDidMount() {
+    componentWillMount() {
         this.initGame();
     }
 
     initGame() {
         let board = this.state.board;
-        for (var i = 0; i < this.state.boardSize; i++)
+        for (let i = 0; i < this.state.boardSize; i++)
             board[i] = new Array(this.state.boardSize).fill(null);
         this.setState({
             currentTurn: 'X',
@@ -81,9 +81,8 @@ class Game extends Component {
     }
 
     renderSquare(x, y) {
-        const val = this.state.board.length > 0 ? this.state.board[x][y] : null;
         return (
-            <Square value={val} handleFunc={this.handleClick.bind(this,x,y)}
+            <Square value={this.state.board[x][y]} handleFunc={() => this.handleClick(x,y)}
                     isGameFinished={this.state.isGameFinished}/>
         )
     }
@@ -123,10 +122,11 @@ class Game extends Component {
                     </table>
                 </div>
                 <button onClick={this.initGame.bind(this)}>Start over</button>
+                {this.state.isGameFinished &&
                 <div className="gameFinished">
-                    { this.state.isGameFinished && !this.state.winner ? <span>Game Over</span> : null }
-                    { this.state.isGameFinished && this.state.winner ? <span>{this.state.winner} has won</span> : null }
+                    {this.state.winner ? <span>{this.state.winner} has won</span> : <span>Game Over</span>}
                 </div>
+                }
             </div>
         );
     }

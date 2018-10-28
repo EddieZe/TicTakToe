@@ -7,18 +7,12 @@
 import openSocket from 'socket.io-client';
 const socket = openSocket('http://localhost:8000');
 
-function makeMove(cords, sign, cb) {
-    socket.on('updateStatus', (gameParams) => {
-        cb(gameParams);
-    });
-    socket.emit('makeMove', cords, sign);
+function resetGame() {
+    socket.emit('resetGame');
 }
 
-function resetGame(cb) {
-    socket.on('updateStatus', (gameParams) => {
-        cb(gameParams);
-    });
-    socket.emit('resetGame');
+function makeMove(cords, sign) {
+    socket.emit('makeMove', cords, sign);
 }
 
 function askToJoin(cb) {
@@ -28,10 +22,10 @@ function askToJoin(cb) {
     socket.on('gameIsFull', () => {
         cb()
     });
-    socket.emit('askToJoin', 'Eddie')
+    socket.on('updateStatus', (gameParams) => {
+        cb(gameParams);
+    });
+    socket.emit('askToJoin')
 }
 
-socket.on('gameFinished', () => {
-
-});
 export { makeMove, resetGame, askToJoin }

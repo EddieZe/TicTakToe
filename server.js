@@ -21,23 +21,16 @@ let gameStatus;
 
 io.on('connection', (player) => {
 
-    player.on('askToJoin', (name) => {
+    player.on('askToJoin', () => {
         if (players.length < maxNumOfPlayers) {
             let sign = players.length === 0 ? 'X' : players[0].sign === 'X' ? 'O' : "X";
-
-            let newPlayer = {id: player.id, name: name, sign: sign};
+            let newPlayer = {id: player.id, sign: sign};
             players.push(newPlayer);
-
             if (!gameStatus) {
                 initGame()
             }
-
             gameStatus.playerSign = newPlayer.sign;
-            console.log('Player: ' + newPlayer.name + ' joined to the game, with the sign: ' + newPlayer.sign);
             player.emit('joinedToGame', gameStatus);
-            if (players.length === maxNumOfPlayers) {
-                io.sockets.emit('canStartTheGame');
-            }
         }
         else {
             player.emit('gameIsFull');
@@ -47,7 +40,6 @@ io.on('connection', (player) => {
     player.on('resetGame', () => {
         initGame();
         io.sockets.emit('updateStatus', gameStatus);
-        console.log('Game Restarted')
     });
 
     player.on('makeMove', (cords, sign) => {
@@ -56,7 +48,7 @@ io.on('connection', (player) => {
         gameStatus.currentTurn = gameStatus.currentTurn === 'X' ? 'O' : 'X';
         gameStatus.moves = 9 - gameStatus.moves > 0 ? gameStatus.moves + 1 : gameStatus.moves;
         let winner = checkIsGameFinished();
-        if (winner || gameStatus.moves === 0) {
+        if (winner || gameStatus.moves === 9) {
             gameStatus.winner = winner;
             gameStatus.isGameFinished = true;
         }
@@ -64,7 +56,9 @@ io.on('connection', (player) => {
     });
 
     player.on('disconnect', () => {
-        let index = players.map(function(e) { return e.id; }).indexOf(player.id);
+        let index = players.map(function (e) {
+            return e.id;
+        }).indexOf(player.id);
         if (index > -1) {
             players.splice(index, 1);
         }
@@ -91,7 +85,9 @@ function initGame() {
     gameStatus = {
         board: board,
         currentTurn: 'X',
-        moves: 0
+        moves: 0,
+        winner: null,
+        isGameFinished: false
     }
 }
 

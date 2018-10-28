@@ -33,53 +33,37 @@ class Game extends Component {
 
         this.handleClick = this.handleClick.bind(this);
         this.updateState = this.updateState.bind(this);
-        this.initGame = this.initGame.bind(this);
     }
 
     componentWillMount() {
-        this.initGame();
         askToJoin((gameParams) => {
             if (gameParams) {
                 this.updateState(gameParams);
             }
-            else {
-                console.log('Cannot Join, too many players already.')
-            }
-        })
+        });
     }
 
-    initGame() {
-        resetGame((gameParams) => {
-            this.updateState(gameParams);
-        });
-        let board = this.state.board;
-        for (let i = 0; i < this.state.boardSize; i++)
-            board[i] = new Array(this.state.boardSize).fill(null);
-        this.setState({
-            board: board
-        })
+    resetGame() {
+        resetGame();
     }
 
     handleClick(x, y) {
-        makeMove([x, y], this.state.playerSign, (gameParams) => {
-            this.updateState(gameParams);
-        });
-        if (this.state.isGameFinished) {
-            setTimeout(() => resetGame((gameParams) => {
-                this.updateState(gameParams);
-            }), 3000)
-        }
+        makeMove([x, y], this.state.playerSign);
     }
 
     updateState(newState) {
         this.setState({
-            currentTurn: newState.currentTurn ? newState.currentTurn : this.state.currentTurn,
+            currentTurn: newState.currentTurn,
             playerSign: this.state.playerSign ? this.state.playerSign : newState.playerSign,
             moves: newState.moves,
-            isGameFinished: newState.isGameFinished ? newState.isGameFinished : this.state.isGameFinished,
-            winner: newState.winner ? newState.winner : this.state.winner,
-            board: newState.board ? newState.board : this.state.board
-        })
+            isGameFinished: newState.isGameFinished,
+            winner: newState.winner,
+            board: newState.board,
+            isDataLoaded : true
+        });
+        if (this.state.isGameFinished) {
+            setTimeout(() => resetGame(), 3000)
+        }
     }
 
     renderSquare(x, y) {
@@ -113,6 +97,7 @@ class Game extends Component {
         return (
             <div className="game">
                 {this.renderGameIndicators()}
+                {this.state.isDataLoaded &&
                 <div className="board">
                     <table>
                         <tbody>
@@ -134,7 +119,8 @@ class Game extends Component {
                         </tbody>
                     </table>
                 </div>
-                {this.state.playerSign && <button onClick={this.initGame.bind(this)}>Start over</button>}
+                }
+                {this.state.playerSign && <button onClick={this.resetGame.bind(this)}>Start over</button>}
                 {this.state.isGameFinished &&
                 <div className="game-finished">
                     {this.state.winner ? <span>{this.state.winner} has won</span> : <span>Game Over</span>}

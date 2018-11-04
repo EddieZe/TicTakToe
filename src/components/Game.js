@@ -18,17 +18,7 @@ class Game extends Component {
             boardSize: 3,
             board: [],
             isGameFinished: false,
-            winner: null,
-            winningSets: [
-                [[0, 0], [0, 1], [0, 2]],
-                [[1, 0], [1, 1], [1, 2]],
-                [[2, 0], [2, 1], [2, 2]],
-                [[0, 0], [1, 0], [2, 0]],
-                [[0, 1], [1, 1], [2, 1]],
-                [[0, 2], [1, 2], [2, 2]],
-                [[0, 0], [1, 1], [2, 2]],
-                [[0, 2], [1, 1], [2, 0]]
-            ]
+            winner: null
         };
 
         this.handleClick = this.handleClick.bind(this);
@@ -48,7 +38,9 @@ class Game extends Component {
     }
 
     handleClick(x, y) {
-        makeMove([x, y], this.state.playerSign);
+        if (!this.state.board[x][y]) {
+            makeMove([x, y], this.state.playerSign);
+        }
     }
 
     updateState(newState) {
@@ -59,7 +51,7 @@ class Game extends Component {
             isGameFinished: newState.isGameFinished,
             winner: newState.winner,
             board: newState.board,
-            isDataLoaded : true
+            isDataLoaded: true
         });
         if (this.state.isGameFinished) {
             setTimeout(() => resetGame(), 3000)
@@ -119,7 +111,9 @@ class Game extends Component {
                     </table>
                 </div>
                 }
-                {this.state.playerSign && <button onClick={this.resetGame.bind(this)}>Cleanup</button>}
+                {this.state.playerSign && <button
+                    onClick={this.resetGame.bind(this)}
+                    disabled={this.state.isGameFinished}>Cleanup</button>}
                 {this.state.isGameFinished &&
                 <div className="game-finished">
                     {this.state.winner ? <span>{this.state.winner} has won</span> : <span>Game Over</span>}

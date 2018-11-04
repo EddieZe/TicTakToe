@@ -16,7 +16,7 @@ const winningSets = [
     [[0, 0], [1, 1], [2, 2]],
     [[0, 2], [1, 1], [2, 0]]
 ];
-let board = [];
+let board = [], winner;
 let aiBoard = [[3, 2, 3], [2, 4, 2], [3, 2, 3]];
 const players = [];
 let gameStatus;
@@ -47,24 +47,37 @@ io.on('connection', (player) => {
     player.on('makeMove', (cords, sign) => {
         console.log(sign + ' asked to make the following move: ' + cords[0] + ',' + cords[1]);
         gameStatus.board[cords[0]][cords[1]] = sign;
-        //gameStatus.currentTurn = gameStatus.currentTurn === 'X' ? 'O' : 'X';
-        gameStatus.moves = 9 - gameStatus.moves > 0 ? gameStatus.moves + 2 : gameStatus.moves;
+        aiBoard[cords[0]][cords[1]] = 0;
+        gameStatus.moves = 9 - gameStatus.moves > 0 ? gameStatus.moves + 1 : gameStatus.moves;
 
         let nextMachineMove = blockNextWin();
         if (nextMachineMove) {
             aiBoard[nextMachineMove[0]][nextMachineMove[1]] = 0;
+            gameStatus.moves = 9 - gameStatus.moves > 0 ? gameStatus.moves + 1 : gameStatus.moves;
             gameStatus.board[nextMachineMove[0]][nextMachineMove[1]] = 'O';
+            let winner = checkIsGameFinished();
+            if (winner || gameStatus.moves === 9) {
+                gameStatus.winner = winner;
+                gameStatus.isGameFinished = true;
+                io.sockets.emit('updateStatus', gameStatus);
+            }
         }
         else {
-            nextMachineMove = updateAndFindBestOption(cords);
-            gameStatus.board[nextMachineMove.x][nextMachineMove.y] = 'O';
+            nextMachineMove = updateAndFindBestOption();
+            if (nextMachineMove) {
+                gameStatus.moves = 9 - gameStatus.moves > 0 ? gameStatus.moves + 1 : gameStatus.moves;
+                gameStatus.board[nextMachineMove.x][nextMachineMove.y] = 'O';
+            }
         }
         let winner = checkIsGameFinished();
         if (winner || gameStatus.moves === 9) {
             gameStatus.winner = winner;
             gameStatus.isGameFinished = true;
+            io.sockets.emit('updateStatus', gameStatus);
         }
-        io.sockets.emit('updateStatus', gameStatus);
+        else {
+            io.sockets.emit('updateStatus', gameStatus);
+        }
     });
 
     player.on('disconnect', () => {
@@ -77,8 +90,7 @@ io.on('connection', (player) => {
     })
 });
 
-function updateAndFindBestOption(cords) {
-    aiBoard[cords[0]][cords[1]] = 0;
+function updateAndFindBestOption() {
     let max = 0, bestCell = {};
     aiBoard.forEach((row, indexX) => {
         row.forEach((el, indexY) => {
@@ -89,8 +101,11 @@ function updateAndFindBestOption(cords) {
             }
         })
     });
-    aiBoard[bestCell.x][bestCell.y] = 0;
-    return bestCell
+    if (max > 0) {
+        aiBoard[bestCell.x][bestCell.y] = 0;
+        return bestCell
+    }
+    return null;
 }
 
 function blockNextWin() {
